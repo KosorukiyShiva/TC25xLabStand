@@ -21,11 +21,31 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-//#include <stdlib.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+uint32_t ADC_value = 0;
+uint32_t value = 0;
+extern uint32_t signal;
+extern uint8_t SIZE;
+extern uint8_t map[];
+//extern uint32_t PWM_ch1[], PWM_ch2, PWM_ch3;
+//uint32_t signal[] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+//		 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 48, 49, 50, 51, 52, 54, 55, 56, 57, 58, 60, 61, 62, 63, 64, 65, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 86, 87,
+//		 88, 89, 90, 90, 91, 92, 92, 93, 93, 94, 95, 95, 96, 96, 96, 97, 97, 98, 98, 98, 98, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 98, 98, 98, 98, 97, 97, 96, 96, 96, 95, 95, 94,
+//		 94, 93, 92, 92, 91, 90, 90, 89, 88, 87, 87, 86, 85, 84, 83, 82, 81, 80, 79, 78, 77, 76, 75, 74, 73, 72, 71, 70, 69, 68, 67, 66, 64, 63, 62, 61, 60, 59, 57, 56, 55, 54, 53, 51, 50, 49, 48, 47, 45,
+//		 44, 43, 42, 41, 39, 38, 37, 36, 35, 34, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 13, 12, 11, 10, 9, 9, 8, 7, 7, 6, 6, 5, 4, 4, 3, 3, 3, 2, 2, 1, 1, 1, 1, 0,
+//		 0, 0, 0, 0, 0, 0, 0};
+uint32_t ssignal[] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+				 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 48, 49, 50, 51, 52, 54, 55, 56, 57, 58, 60, 61, 62, 63, 64, 65, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 86, 87,
+				 88, 89, 90, 90, 91, 92, 92, 93, 93, 94, 95, 95, 96, 96, 96, 97, 97, 98, 98, 98, 98, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 98, 98, 98, 98, 97, 97, 96, 96, 96, 95, 95, 94,
+				 94, 93, 92, 92, 91, 90, 90, 89, 88, 87, 87, 86, 85, 84, 83, 82, 81, 80, 79, 78, 77, 76, 75, 74, 73, 72, 71, 70, 69, 68, 67, 66, 64, 63, 62, 61, 60, 59, 57, 56, 55, 54, 53, 51, 50, 49, 48, 47, 45,
+				 44, 43, 42, 41, 39, 38, 37, 36, 35, 34, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 13, 12, 11, 10, 9, 9, 8, 7, 7, 6, 6, 5, 4, 4, 3, 3, 3, 2, 2, 1, 1, 1, 1, 0,
+				 0, 0, 0, 0, 0, 0, 0};
+
+uint32_t PWM_ch1[260]={0};
 
 /* USER CODE END PTD */
 
@@ -41,6 +61,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 
 I2C_HandleTypeDef hi2c1;
 
@@ -64,47 +85,27 @@ static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
-uint32_t ADC_value = 0;
-uint32_t state = 0;
-uint16_t pwmData_ch1[24] = {0,4,10,20,32,45,59,72,84,93,100,100,100,100,93,84,72,59,45,32,20,10,4,0};
-
-long map(long x, long in_min, long in_max, long out_min, long out_max){
+long Map(long x, long in_min, long in_max, long out_min, long out_max)
+{
 	return (x - in_min) * (out_max - out_min + 1) / (in_max - in_min + 1) + out_min;
-}
-void HAL_ADC_ConvCpltCallback (ADC_HandleTypeDef *hadc){
-	ADC_value = HAL_ADC_GetValue(&hadc1);
-	if ((ADC_value>= 0)&&(ADC_value<128)&&(state != 0)){
-		  			HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
-		  			HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *) pwmData_ch1, 6);
-		  			state = 0;
-		  		}
-	if ((ADC_value>= 128)&&(ADC_value<=256)&&(state != 1)){
-		  			HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
-		  			HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *) pwmData_ch1, 24);
-		  			state = 1;
-		  		}
-//	mapped_value = map(ADC_value, 0, 4096, 0, 100);
-
-//	if ((mapped_value > 50)&&(mapped_value<75)){
-//		uint16_t pwmData_ch1[24] = {0,4,10,20,32,45,59,72,84,93,100,100,100,100,93,84,72,59,45,32,20,10,4,0};
-//	}
-
-//	uint16_t pwmData_ch1[12] = {1,7,19,32,44,51,51,44,32,19,7,1};
 }
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//uint32_t aCCValue_Buffer[4] = {0, 0, 0};
-
-// uint32_t uwTimerPeriod = 0;
-//uint16_t pwmData_ch1[12] = {1,7,19,32,44,51,51,44,32,19,7,1};
-//uint16_t *pwmData_ch0 = malloc(24*sizeof(uint16_t));
-//pwmData_ch0 = {0,4,10,20,32,45,59,72,84,93,100,100,100,100,93,84,72,59,45,32,20,10,4,0};
-//uint16_t pwmData_ch1[6];
-//uint16_t pwmData_ch2[6];
-//uint16_t pwmData_ch3[6];
-//uint16_t pwmData_ch3[6];
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
+	ADC_value = HAL_ADC_GetValue(&hadc1); // тут мы �?тавим именно ту приватную перменную переферии к которой мы обращаем�?�?
+	value = Map(ADC_value, 0, 1010, 0, 100);
+//	clear_chanels(PWM_ch1, PWM_ch2, PWM_ch3);
+//	for (uint16_t var = 0; var < 260; ++var) {
+//			PWM_ch1[var] = 0;
+//		}
+		sort_signal(ssignal, Map, value, PWM_ch1);
+		mirror_signal(SIZE, &SIZE);
+		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )PWM_ch1, SIZE);
+		HAL_Delay(100);
+//	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, value);
+}
 
 /* USER CODE END 0 */
 
@@ -144,25 +145,19 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
-//  pwmData_ch1[0] = 9; pwmData_ch1[1] = 50; pwmData_ch1[2] = 95;
-//  pwmData_ch1[3] = 95; pwmData_ch1[4] = 50; pwmData_ch1[5] = 9;
-
-//  pwmData_ch2[0] = 95; pwmData_ch2[1] = 95; pwmData_ch2[2] = 50;
-//  pwmData_ch2[3] = 9; pwmData_ch2[4] = 9; pwmData_ch2[5] = 50;
+//  uint32_t aCCValue_Buffer[3] = {0, 0, 0};
 //
-//  pwmData_ch3[0] = 50; pwmData_ch3[1] = 9; pwmData_ch3[2] = 9;
-//  pwmData_ch3[3] = 50; pwmData_ch3[4] = 95; pwmData_ch3[5] = 95;
-  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *) pwmData_ch1, 24);
-  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
-  HAL_ADC_Start_IT(&hadc1);
+////  uint32_t uwTimerPeriod = ;
+//
+//  aCCValue_Buffer[0] = 20; // пример формировани�? какого-то �?игнала
+//  aCCValue_Buffer[1] = 80;
+//  aCCValue_Buffer[2] = 40;
 
-//  HAL_Delay(10000);
-//  HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
-//  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *) pwmData_ch1, 12);
-//  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )pwmData_ch2, 6);
-//  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
-//  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )pwmData_ch3, 6);
-//  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )ssignal, 260);
+
+
+//  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *)signal, 260);
+//  HAL_ADC_Start_IT(&hadc1);
 
   /* USER CODE END 2 */
 
@@ -173,21 +168,20 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if ((ADC_value > 0)&&(ADC_value <2048)&&(state != 0)){
-//	  		HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
-	  		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *) pwmData_ch1, 6);
-	  		state = 0;
-	  	}
-//	  	if ((ADC_value >= 1024)&&(ADC_value<2048)&&(state != 1)){
-//	  			HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
-//	  			HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *) pwmData_ch1, 12);
-//	  			state = 1;
-//	  	}
-//	  	if ((ADC_value >= 2048)&&(ADC_value <3072)&&(state != 2)){
-//	  			HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
-//	  			HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *) pwmData_ch1, 18);
-//	  			state = 2;
-//	  	}
+	  HAL_ADC_Start(&hadc1);
+	    HAL_ADC_PollForConversion(&hadc1, 100);
+	    ADC_value = HAL_ADC_GetValue(&hadc1);
+	    HAL_ADC_Stop(&hadc1);
+	    HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
+	    value = Map(ADC_value, 0, 1024, 0, 128);
+	    for (uint16_t var = 0;  var < 260; ++var) {
+	    	PWM_ch1[var] = 0;
+		}
+//	    clear_chanels(PWM_ch1, PWM_ch2, PWM_ch3);
+	    sort_signal(ssignal, map, value, PWM_ch1);
+	    mirror_signal(SIZE, PWM_ch1);
+	    HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )PWM_ch1, SIZE);
+	    HAL_Delay(500);
 
   }
   /* USER CODE END 3 */
@@ -261,14 +255,14 @@ static void MX_ADC1_Init(void)
   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-  hadc1.Init.Resolution = ADC_RESOLUTION_8B;
+  hadc1.Init.Resolution = ADC_RESOLUTION_10B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.GainCompensation = 0;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
-  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.NbrOfConversion = 4;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
@@ -295,7 +289,32 @@ static void MX_ADC1_Init(void)
   sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 500;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Rank = ADC_REGULAR_RANK_2;
   sConfig.Offset = 0;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Rank = ADC_REGULAR_RANK_3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Rank = ADC_REGULAR_RANK_4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -494,6 +513,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+  /* DMA1_Channel4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 
 }
 

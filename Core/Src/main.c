@@ -46,6 +46,8 @@ uint32_t ssignal[] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 5
 				 0, 0, 0, 0, 0, 0, 0};
 
 uint32_t PWM_ch1[260]={0};
+extern uint32_t PWM_ch2[];
+extern uint32_t PWM_ch3[];
 
 /* USER CODE END PTD */
 
@@ -100,8 +102,9 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
 //	for (uint16_t var = 0; var < 260; ++var) {
 //			PWM_ch1[var] = 0;
 //		}
-		sort_signal(ssignal, Map, value, PWM_ch1);
-		mirror_signal(SIZE, &SIZE);
+//		sort_signal(ssignal, Map, value, PWM_ch1);
+//		mirror_signal(SIZE, &SIZE);
+//		shift_chanels(PWM_ch1, PWM_ch2, PWM_ch3, SIZE);
 		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )PWM_ch1, SIZE);
 		HAL_Delay(100);
 //	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, value);
@@ -154,7 +157,8 @@ int main(void)
 //  aCCValue_Buffer[2] = 40;
 
   HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )ssignal, 260);
-
+  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )ssignal, 260);
+  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )ssignal, 260);
 
 //  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *)signal, 260);
 //  HAL_ADC_Start_IT(&hadc1);
@@ -173,14 +177,19 @@ int main(void)
 	    ADC_value = HAL_ADC_GetValue(&hadc1);
 	    HAL_ADC_Stop(&hadc1);
 	    HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
+	    HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_2);
+	    HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_3);
 	    value = Map(ADC_value, 0, 1024, 0, 128);
-	    for (uint16_t var = 0;  var < 260; ++var) {
-	    	PWM_ch1[var] = 0;
-		}
+//	    for (uint16_t var = 0;  var < 260; ++var) {
+//	    	PWM_ch1[var] = 0;
+//		}
 //	    clear_chanels(PWM_ch1, PWM_ch2, PWM_ch3);
 	    sort_signal(ssignal, map, value, PWM_ch1);
 	    mirror_signal(SIZE, PWM_ch1);
+	    shift_channels(PWM_ch1, PWM_ch2, PWM_ch3, SIZE);
 	    HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )PWM_ch1, SIZE);
+	    HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )PWM_ch2, SIZE);
+	    HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )PWM_ch3, SIZE);
 	    HAL_Delay(500);
 
   }

@@ -24,8 +24,8 @@ uint16_t SIZE  = 0; // size for pwm_dma_start length
  uint16_t MAP_SIZE = sizeof(map)/sizeof(map[0]);
 
 // uint8_t PWM_ch1[260]={0};
- uint8_t PWM_ch2[260]={0};
- uint8_t PWM_ch3[260]={0};
+ uint32_t PWM_ch2[260]={0};
+ uint32_t PWM_ch3[260]={0};
 
 duty_subrange st_sbr = OFF;
 uint8_t sort_signal( uint32_t* signal, uint8_t* map, uint8_t duty, uint32_t* PWM_ch1){
@@ -101,7 +101,7 @@ uint8_t mirror_signal(uint16_t SIZE, uint32_t* PWM_ch1){
   return 0;
  }
 
-uint8_t shift_chanels(uint8_t* PWM_ch1, uint8_t* PWM_ch2, uint8_t* PWM_ch3, uint8_t SIZE){
+uint8_t shift_channels(uint32_t* PWM_ch1, uint32_t* PWM_ch2, uint32_t* PWM_ch3, uint16_t SIZE){
   uint8_t thSIZE = SIZE/3;
   uint8_t tthSIZE = (2*SIZE)/3;
   for(uint8_t i = 0; i < SIZE; i++){

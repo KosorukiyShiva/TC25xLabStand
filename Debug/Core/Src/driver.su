@@ -1,3 +1,3 @@
-../Core/Src/driver.c:31:9:sort_signal	40	static
-../Core/Src/driver.c:94:9:mirror_signal	24	static
-../Core/Src/driver.c:104:9:shift_chanels	40	static
+../Core/Src/driver.c:35:9:sort_signal	48	static
+../Core/Src/driver.c:118:9:mirror_signal	32	static
+../Core/Src/driver.c:135:9:shift_channels	48	static

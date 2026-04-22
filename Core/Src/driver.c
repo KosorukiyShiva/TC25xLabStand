@@ -22,13 +22,17 @@ uint16_t SIZE  = 0; // size for pwm_dma_start length
 // uint16_t SIZE  = 0; // size for pwm_dma_start length
  uint16_t SIGNAL_SIZE = sizeof(signal)/sizeof(signal[0]);
  uint16_t MAP_SIZE = sizeof(map)/sizeof(map[0]);
+ extern TIM_HandleTypeDef htim1;
+ uint32_t PWM_ch11[260]={0};
+ uint32_t PWM_ch12[260]={0};
+ uint32_t PWM_ch13[260]={0};
 
-// uint8_t PWM_ch1[260]={0};
- uint32_t PWM_ch2[260]={0};
- uint32_t PWM_ch3[260]={0};
+ uint32_t PWM_ch21[260]={0};
+ uint32_t PWM_ch22[260]={0};
+ uint32_t PWM_ch23[260]={0};
 
 duty_subrange st_sbr = OFF;
-uint8_t sort_signal( uint32_t* signal, uint8_t* map, uint8_t duty, uint32_t* PWM_ch1){
+uint8_t sort_signal( uint32_t* signal, uint8_t* map, uint8_t duty, uint32_t* PWM_ch11, uint32_t* PWM_ch21){
   /*
   0. OK						  error code: 0
   1. range of duty = 0-128    error code: 1
@@ -53,20 +57,21 @@ uint8_t sort_signal( uint32_t* signal, uint8_t* map, uint8_t duty, uint32_t* PWM
 //	 else if(duty > 40 && duty <= 100){
 //		 st_sbr = BG_FRC;
 //	 }
-	 else if (duty > 0 && duty <= 256) {
-		st_sbr = ON;
+	 else if (duty > 0 && duty <= 128 && st_sbr == OFF) {
+		st_sbr = ON1;
+		PWM_ch11[0] = signal[map[0]];
 	}
 
-	 PWM_ch1[0] = signal[map[0]];
+
 	 switch (st_sbr) {
 		case OFF:
 			SIZE = 0;
 			break;
-		case ON:
+		case ON1:
 			SIZE = SIGNAL_SIZE - duty*2;
 			for (int i = 0 ; i < SIZE/2; i++ ){
 				if(i == 0){
-					PWM_ch1[0] = signal[0];
+					PWM_ch11[0] = signal[0];
 					swap_val1 = map[1];
 					continue;
 				}
@@ -75,13 +80,32 @@ uint8_t sort_signal( uint32_t* signal, uint8_t* map, uint8_t duty, uint32_t* PWM
 						swap_val1 = map[k];
 					}
 				}
-        PWM_ch1[i] = (uint32_t)signal[swap_val1] ;
+        PWM_ch11[i] = (uint32_t)signal[swap_val1] ;
         swap_valp = swap_val1 ;
         swap_val1 = map[1];
 			}
-//      for (int i = 0; i < SIZE/2; i++ ){
-//        PWM_ch1[i] = (uint32_t) signal[PWM_ch1[i]];
-//      }
+			st_sbr = ON2;
+			break;
+		case ON2:
+					SIZE = SIGNAL_SIZE - duty*2;
+					for (int i = 0 ; i < SIZE/2; i++ ){
+						if(i == 0){
+							PWM_ch21[0] = signal[0];
+							swap_val1 = map[1];
+							continue;
+						}
+						for(int k = 0; k < SIZE/2; k++){
+							if(map[k] > swap_valp && map[k] < swap_val1){
+								swap_val1 = map[k];
+							}
+						}
+		        PWM_ch21[i] = (uint32_t)signal[swap_val1] ;
+		        swap_valp = swap_val1 ;
+		        swap_val1 = map[1];
+					}
+					st_sbr = ON1;
+					break;
+
       return 0;
 			break;
 		default:
@@ -91,37 +115,79 @@ uint8_t sort_signal( uint32_t* signal, uint8_t* map, uint8_t duty, uint32_t* PWM
 	 return 98;
  }
 
-uint8_t mirror_signal(uint16_t SIZE, uint32_t* PWM_ch1){
-  for(int i = 0; i < SIZE/2; i++){
-    PWM_ch1[i+SIZE/2] = PWM_ch1[SIZE/2 -(1 + i)];
-  }
+uint8_t mirror_signal(uint16_t SIZE, uint32_t* PWM_ch11, uint32_t* PWM_ch21){
+	if(st_sbr == ON1){
+		for(int i = 0; i < SIZE/2; i++){
+			PWM_ch11[i+SIZE/2] = PWM_ch11[SIZE/2 -(1 + i)];
+		  }
+	}
+	if(st_sbr == ON2){
+		for(int i = 0; i < SIZE/2; i++){
+			PWM_ch21[i+SIZE/2] = PWM_ch21[SIZE/2 -(1 + i)];
+		  }
+	}
 //  for(int i = 0; i + SIZE < 260; i++){
 //	  PWM_ch1[SIZE + i] = 0;
 //  }
   return 0;
  }
 
-uint8_t shift_channels(uint32_t* PWM_ch1, uint32_t* PWM_ch2, uint32_t* PWM_ch3, uint16_t SIZE){
+uint8_t shift_channels(uint32_t* PWM_ch11, uint32_t* PWM_ch12, uint32_t* PWM_ch13, uint32_t* PWM_ch21, uint32_t* PWM_ch22, uint32_t* PWM_ch23, uint16_t SIZE){
   uint8_t thSIZE = SIZE/3;
   uint8_t tthSIZE = (2*SIZE)/3;
-  for(uint8_t i = 0; i < SIZE; i++){
-    if(thSIZE + i < SIZE){
-      PWM_ch2[i] = PWM_ch1[thSIZE+i];
-    }
-    else if(thSIZE + i >= SIZE){
-      PWM_ch2[i] = PWM_ch1[(thSIZE+i) - SIZE];
-    }
+  if(st_sbr == ON1){
+	  for(uint8_t i = 0; i < SIZE; i++){
+		if(thSIZE + i < SIZE){
+		  PWM_ch12[i] = PWM_ch11[thSIZE+i];
+		}
+		else if(thSIZE + i >= SIZE){
+		  PWM_ch12[i] = PWM_ch11[(thSIZE+i) - SIZE];
+		}
 
-    if(tthSIZE + i < SIZE){
-      PWM_ch3[i] = PWM_ch1[tthSIZE+i];
-    }
-    else if(tthSIZE + i >= SIZE){
-      PWM_ch3[i] = PWM_ch1[(tthSIZE+i) - SIZE];
-    }
+		if(tthSIZE + i < SIZE){
+		  PWM_ch13[i] = PWM_ch11[tthSIZE+i];
+		}
+		else if(tthSIZE + i >= SIZE){
+		  PWM_ch13[i] = PWM_ch11[(tthSIZE+i) - SIZE];
+		}
+	  }
+	  for(int i = 0; i + SIZE < 260; i++){
+		  PWM_ch12[SIZE + i] = 0;
+		  PWM_ch13[SIZE + i] = 0;
+		}
+	    HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
+		HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_2);
+		HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_3);
+		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )PWM_ch11, SIZE);
+		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )PWM_ch12, SIZE);
+		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )PWM_ch13, SIZE);
   }
-  for(int i = 0; i + SIZE < 260; i++){
-  	  PWM_ch2[SIZE + i] = 0;
-  	  PWM_ch3[SIZE + i] = 0;
+  if(st_sbr == ON2){
+  	  for(uint8_t i = 0; i < SIZE; i++){
+  		if(thSIZE + i < SIZE){
+  		  PWM_ch22[i] = PWM_ch21[thSIZE+i];
+  		}
+  		else if(thSIZE + i >= SIZE){
+  		  PWM_ch22[i] = PWM_ch21[(thSIZE+i) - SIZE];
+  		}
+
+  		if(tthSIZE + i < SIZE){
+  		  PWM_ch23[i] = PWM_ch21[tthSIZE+i];
+  		}
+  		else if(tthSIZE + i >= SIZE){
+  		  PWM_ch23[i] = PWM_ch21[(tthSIZE+i) - SIZE];
+  		}
+  	  }
+  	  for(int i = 0; i + SIZE < 260; i++){
+  		  PWM_ch22[SIZE + i] = 0;
+  		  PWM_ch23[SIZE + i] = 0;
+  		}
+  		HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
+  		HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_2);
+  		HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_3);
+  		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )PWM_ch21, SIZE);
+  		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )PWM_ch22, SIZE);
+  		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )PWM_ch23, SIZE);
     }
   return 0;
  }

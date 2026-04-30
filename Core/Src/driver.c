@@ -161,6 +161,9 @@ uint8_t shift_channels(uint32_t* PWM_ch11, uint32_t* PWM_ch12, uint32_t* PWM_ch1
 		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )PWM_ch11, SIZE);
 		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )PWM_ch12, SIZE);
 		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )PWM_ch13, SIZE);
+		HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+		HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
+		HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
   }
   if(st_sbr == ON2){
   	  for(uint8_t i = 0; i < SIZE; i++){
@@ -188,6 +191,9 @@ uint8_t shift_channels(uint32_t* PWM_ch11, uint32_t* PWM_ch12, uint32_t* PWM_ch1
   		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )PWM_ch21, SIZE);
   		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )PWM_ch22, SIZE);
   		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )PWM_ch23, SIZE);
+  		HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+  		HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
+  		HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
     }
   return 0;
  }

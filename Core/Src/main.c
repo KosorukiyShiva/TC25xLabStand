@@ -1,59 +1,27 @@
 /* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "ADC_handler.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-uint32_t ADC_value = 0;
-uint32_t value = 0;
-uint32_t value1 = 0;
-extern uint32_t signal;
-extern uint8_t SIZE;
-extern uint8_t map[];
-extern uint32_t PWM_ch11[];
-extern uint32_t PWM_ch12[];
-extern uint32_t PWM_ch13[];
-extern uint32_t PWM_ch21[];
-extern uint32_t PWM_ch22[];
-extern uint32_t PWM_ch23[];
-//extern duty_subrange st_sbr;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
-DMA_HandleTypeDef hdma_adc1;
+//ADC_HandleTypeDef hadc1;
+//DMA_HandleTypeDef hdma_adc1;
 
 CORDIC_HandleTypeDef hcordic;
 DMA_HandleTypeDef hdma_cordic_read;
@@ -70,7 +38,8 @@ DMA_HandleTypeDef hdma_tim1_ch2;
 DMA_HandleTypeDef hdma_tim1_ch3;
 
 /* USER CODE BEGIN PV */
-CORDIC_ConfigTypeDef SineCordic;
+CORDIC_ConfigTypeDef CORDIC_Sine;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,28 +52,10 @@ static void MX_TIM1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CORDIC_Init(void);
 /* USER CODE BEGIN PFP */
-long Map(long x, long in_min, long in_max, long out_min, long out_max)
-{
-	return (x - in_min) * (out_max - out_min + 1) / (in_max - in_min + 1) + out_min;
-}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc){
-	ADC_value = HAL_ADC_GetValue(&hadc1); // тут мы �?тавим именно ту приватную перменную переферии к которой мы обращаем�?�?
-	value = Map(ADC_value, 0, 1024, 0, 128);
-	if(value <= value1-1 || value >= value1+1)
-	{
-		value1 = value;
-
-		sort_signal(ssignal, map, value, PWM_ch11, PWM_ch21);
-		mirror_signal(SIZE, PWM_ch11, PWM_ch21);
-		shift_channels(PWM_ch11, PWM_ch12, PWM_ch13,PWM_ch21, PWM_ch22, PWM_ch23, SIZE);
-
-	}
-//	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, value);
-}
 
 /* USER CODE END 0 */
 
@@ -116,7 +67,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -125,14 +75,12 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -144,40 +92,27 @@ int main(void)
   MX_ADC1_Init();
   MX_CORDIC_Init();
   /* USER CODE BEGIN 2 */
+  CORDIC_Sine.Function = CORDIC_FUNCTION_SINE;
+  CORDIC_Sine.Precision = CORDIC_PRECISION_6CYCLES;
+  CORDIC_Sine.Scale = CORDIC_SCALE_0;
+  CORDIC_Sine.NbWrite = CORDIC_NBWRITE_1;
+  CORDIC_Sine.NbRead = CORDIC_NBREAD_1;
+  CORDIC_Sine.InSize = CORDIC_INSIZE_32BITS;
+  CORDIC_Sine.OutSize = CORDIC_OUTSIZE_32BITS;
+  if(HAL_CORDIC_Configure(&hcordic, &CORDIC_Sine) != HAL_OK){
+	  Error_Handler();
+  }
 
-  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )ssignal, 260);
-  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )ssignal, 260);
-  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )ssignal, 260);
-  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
-  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
-  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
 
-  HAL_ADC_Start_IT(&hadc1);
 
-  SineCordic.Function			=	CORDIC_FUNCTION_SINE;
-  SineCordic.Precision			=	CORDIC_PRECISION_6CYCLES;
-  SineCordic.Scale				=	CORDIC_SCALE_0;
-  SineCordic.NbWrite			=	CORDIC_NBWRITE_1;
-  SineCordic.NbRead				=	CORDIC_NBREAD_1;
-  SineCordic.InSize				=	CORDIC_INSIZE_32BITS;
-  SineCordic.OutSize			=	CORDIC_OUTSIZE_32BITS;
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  for (int i = 0; i < 360; i++) {
-
-	}
-
-//
-
-  }
   /* USER CODE END 3 */
 }
 
@@ -192,7 +127,7 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -201,8 +136,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
-  RCC_OscInitStruct.PLL.PLLN = 32;
+  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV2;
+  RCC_OscInitStruct.PLL.PLLN = 85;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
@@ -235,14 +170,12 @@ static void MX_ADC1_Init(void)
 {
 
   /* USER CODE BEGIN ADC1_Init 0 */
-
   /* USER CODE END ADC1_Init 0 */
 
   ADC_MultiModeTypeDef multimode = {0};
   ADC_ChannelConfTypeDef sConfig = {0};
 
   /* USER CODE BEGIN ADC1_Init 1 */
-
   /* USER CODE END ADC1_Init 1 */
 
   /** Common config
@@ -314,7 +247,6 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC1_Init 2 */
-
   /* USER CODE END ADC1_Init 2 */
 
 }
@@ -328,11 +260,9 @@ static void MX_CORDIC_Init(void)
 {
 
   /* USER CODE BEGIN CORDIC_Init 0 */
-
   /* USER CODE END CORDIC_Init 0 */
 
   /* USER CODE BEGIN CORDIC_Init 1 */
-
   /* USER CODE END CORDIC_Init 1 */
   hcordic.Instance = CORDIC;
   if (HAL_CORDIC_Init(&hcordic) != HAL_OK)
@@ -340,7 +270,6 @@ static void MX_CORDIC_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CORDIC_Init 2 */
-
   /* USER CODE END CORDIC_Init 2 */
 
 }
@@ -354,14 +283,12 @@ static void MX_I2C1_Init(void)
 {
 
   /* USER CODE BEGIN I2C1_Init 0 */
-
   /* USER CODE END I2C1_Init 0 */
 
   /* USER CODE BEGIN I2C1_Init 1 */
-
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00C01848;
+  hi2c1.Init.Timing = 0x10801030;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -392,7 +319,6 @@ static void MX_I2C1_Init(void)
   */
   HAL_I2CEx_EnableFastModePlus(I2C_FASTMODEPLUS_I2C1);
   /* USER CODE BEGIN I2C1_Init 2 */
-
   /* USER CODE END I2C1_Init 2 */
 
 }
@@ -406,11 +332,9 @@ static void MX_SPI1_Init(void)
 {
 
   /* USER CODE BEGIN SPI1_Init 0 */
-
   /* USER CODE END SPI1_Init 0 */
 
   /* USER CODE BEGIN SPI1_Init 1 */
-
   /* USER CODE END SPI1_Init 1 */
   /* SPI1 parameter configuration*/
   hspi1.Instance = SPI1;
@@ -420,7 +344,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -432,7 +356,6 @@ static void MX_SPI1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN SPI1_Init 2 */
-
   /* USER CODE END SPI1_Init 2 */
 
 }
@@ -446,7 +369,6 @@ static void MX_TIM1_Init(void)
 {
 
   /* USER CODE BEGIN TIM1_Init 0 */
-
   /* USER CODE END TIM1_Init 0 */
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
@@ -455,7 +377,6 @@ static void MX_TIM1_Init(void)
   TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
   /* USER CODE BEGIN TIM1_Init 1 */
-
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 1;
@@ -521,7 +442,6 @@ static void MX_TIM1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM1_Init 2 */
-
   /* USER CODE END TIM1_Init 2 */
   HAL_TIM_MspPostInit(&htim1);
 
@@ -591,7 +511,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**
@@ -601,11 +520,6 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -620,8 +534,6 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

@@ -10,4 +10,4 @@
 
 CORDIC_ConfigTypeDef sCordicConfig;
 
-sCordicConfig.Function
+

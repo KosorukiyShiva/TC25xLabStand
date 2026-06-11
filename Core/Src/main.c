@@ -32,20 +32,6 @@ uint32_t value1 = 0;
 extern uint32_t signal;
 extern uint8_t SIZE;
 extern uint8_t map[];
-//extern uint32_t PWM_ch1[], PWM_ch2, PWM_ch3;
-//uint32_t signal[] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
-//		 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 48, 49, 50, 51, 52, 54, 55, 56, 57, 58, 60, 61, 62, 63, 64, 65, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 86, 87,
-//		 88, 89, 90, 90, 91, 92, 92, 93, 93, 94, 95, 95, 96, 96, 96, 97, 97, 98, 98, 98, 98, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 98, 98, 98, 98, 97, 97, 96, 96, 96, 95, 95, 94,
-//		 94, 93, 92, 92, 91, 90, 90, 89, 88, 87, 87, 86, 85, 84, 83, 82, 81, 80, 79, 78, 77, 76, 75, 74, 73, 72, 71, 70, 69, 68, 67, 66, 64, 63, 62, 61, 60, 59, 57, 56, 55, 54, 53, 51, 50, 49, 48, 47, 45,
-//		 44, 43, 42, 41, 39, 38, 37, 36, 35, 34, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 13, 12, 11, 10, 9, 9, 8, 7, 7, 6, 6, 5, 4, 4, 3, 3, 3, 2, 2, 1, 1, 1, 1, 0,
-//		 0, 0, 0, 0, 0, 0, 0};
-uint32_t ssignal[] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
-				 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 48, 49, 50, 51, 52, 54, 55, 56, 57, 58, 60, 61, 62, 63, 64, 65, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 86, 87,
-				 88, 89, 90, 90, 91, 92, 92, 93, 93, 94, 95, 95, 96, 96, 96, 97, 97, 98, 98, 98, 98, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 98, 98, 98, 98, 97, 97, 96, 96, 96, 95, 95, 94,
-				 94, 93, 92, 92, 91, 90, 90, 89, 88, 87, 87, 86, 85, 84, 83, 82, 81, 80, 79, 78, 77, 76, 75, 74, 73, 72, 71, 70, 69, 68, 67, 66, 64, 63, 62, 61, 60, 59, 57, 56, 55, 54, 53, 51, 50, 49, 48, 47, 45,
-				 44, 43, 42, 41, 39, 38, 37, 36, 35, 34, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 13, 12, 11, 10, 9, 9, 8, 7, 7, 6, 6, 5, 4, 4, 3, 3, 3, 2, 2, 1, 1, 1, 1, 0,
-				 0, 0, 0, 0, 0, 0, 0};
-
 extern uint32_t PWM_ch11[];
 extern uint32_t PWM_ch12[];
 extern uint32_t PWM_ch13[];
@@ -84,7 +70,7 @@ DMA_HandleTypeDef hdma_tim1_ch2;
 DMA_HandleTypeDef hdma_tim1_ch3;
 
 /* USER CODE BEGIN PV */
-
+CORDIC_ConfigTypeDef SineCordic;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -159,26 +145,22 @@ int main(void)
   MX_CORDIC_Init();
   /* USER CODE BEGIN 2 */
 
-//  uint32_t aCCValue_Buffer[3] = {0, 0, 0};
-//
-////  uint32_t uwTimerPeriod = ;
-//
-//  aCCValue_Buffer[0] = 20; // пример формировани�? какого-то �?игнала
-//  aCCValue_Buffer[1] = 80;
-//  aCCValue_Buffer[2] = 40;
-
   HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )ssignal, 260);
   HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )ssignal, 260);
   HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )ssignal, 260);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
-//  HAL_TIMEx_PWMN_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )ssignal, 260);
-//  HAL_TIMEx_PWMN_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )ssignal, 260);
-//  HAL_TIMEx_PWMN_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )ssignal, 260);
 
-//  HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t *)signal, 260);
   HAL_ADC_Start_IT(&hadc1);
+
+  SineCordic.Function			=	CORDIC_FUNCTION_SINE;
+  SineCordic.Precision			=	CORDIC_PRECISION_6CYCLES;
+  SineCordic.Scale				=	CORDIC_SCALE_0;
+  SineCordic.NbWrite			=	CORDIC_NBWRITE_1;
+  SineCordic.NbRead				=	CORDIC_NBREAD_1;
+  SineCordic.InSize				=	CORDIC_INSIZE_32BITS;
+  SineCordic.OutSize			=	CORDIC_OUTSIZE_32BITS;
 
   /* USER CODE END 2 */
 
@@ -189,22 +171,11 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  HAL_ADC_Start(&hadc1);
-//	    HAL_ADC_PollForConversion(&hadc1, 100);
-//	    ADC_value = HAL_ADC_GetValue(&hadc1);
-//	    HAL_ADC_Stop(&hadc1);
-//	    HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
-//	    HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_2);
-//	    HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_3);
-//	    value = Map(ADC_value, 0, 1024, 0, 128);
+	  for (int i = 0; i < 360; i++) {
 
-//	    sort_signal(ssignal, map, value, PWM_ch1);
-//	    mirror_signal(SIZE, PWM_ch1);
-//	    shift_channels(PWM_ch1, PWM_ch2, PWM_ch3, SIZE);
-//	    HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t * )PWM_ch1, SIZE);
-//	    HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t * )PWM_ch2, SIZE);
-//	    HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_3, (uint32_t * )PWM_ch3, SIZE);
-//	    HAL_Delay(100);
+	}
+
+//
 
   }
   /* USER CODE END 3 */
@@ -487,9 +458,9 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 38;
+  htim1.Init.Prescaler = 1;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 99;
+  htim1.Init.Period = 4096;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;

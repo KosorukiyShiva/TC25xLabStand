@@ -247,9 +247,6 @@ void HAL_CORDIC_MspInit(CORDIC_HandleTypeDef* hcordic)
 
     __HAL_LINKDMA(hcordic,hdmaIn,hdma_cordic_write);
 
-    /* CORDIC interrupt Init */
-    HAL_NVIC_SetPriority(CORDIC_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(CORDIC_IRQn);
   /* USER CODE BEGIN CORDIC_MspInit 1 */
 
   /* USER CODE END CORDIC_MspInit 1 */
@@ -277,9 +274,6 @@ void HAL_CORDIC_MspDeInit(CORDIC_HandleTypeDef* hcordic)
     /* CORDIC DMA DeInit */
     HAL_DMA_DeInit(hcordic->hdmaOut);
     HAL_DMA_DeInit(hcordic->hdmaIn);
-
-    /* CORDIC interrupt DeInit */
-    HAL_NVIC_DisableIRQ(CORDIC_IRQn);
   /* USER CODE BEGIN CORDIC_MspDeInit 1 */
 
   /* USER CODE END CORDIC_MspDeInit 1 */

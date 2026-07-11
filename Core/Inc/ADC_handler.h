@@ -15,6 +15,7 @@ typedef	struct
 {
 	uint32_t value;
 	uint8_t state; //0 - без изменений  1 - требуется пересчет таблицы
+	enum {NO_IN, LIN_IN, H_IN} interpol; //NO_IN - интерполяция выключена, LIN_IN - линейная интерполяция , H_IN - гиперболическая интерполяция
 } ADC_valueTypeDef;
 
 

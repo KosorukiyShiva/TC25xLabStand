@@ -9,7 +9,7 @@
 #define INC_CORDIC_DRIVER_H_
 #include "stm32g4xx_hal.h"
 
-#define WAVE_SIZE 256
+#define WAVE_SIZE 256 // максимальная длина значений сигнала
 #define WAVE_CONSTANT 2048  // константное заполенение шим сигнала при не дизармленной системе
 
 #define ADC_DEVIDER 512
